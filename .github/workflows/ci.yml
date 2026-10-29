@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 5 * * 1"   # weekly: quarz's main may break the install
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax
+        run: for f in bin/* lib/*.sh; do sh -n "$f"; bash -n "$f"; done
+      - name: shellcheck
+        run: shellcheck -x --shell=sh bin/* lib/*.sh
+
+  install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: false   # a cached install would skip building quarz's main
+      - name: Link this plugin
+        run: mise plugins link --force quarz "$GITHUB_WORKSPACE"
+      - name: List the versions
+        run: mise ls-remote quarz
+      - name: Install quarz's main
+        run: mise install quarz@ref:main
+      - name: Run and build a program
+        run: |
+          cat > hello.qz <<'QZ'
+          def greet(name: String) -> String = "Hello, #{name}!"
+          puts greet("mise")
+          QZ
+          mise exec quarz@ref:main -- quarz --version
+          test "$(mise exec quarz@ref:main -- quarz run hello.qz)" = "Hello, mise!"
+          mise exec quarz@ref:main -- quarz build hello.qz -o hello
+          test "$(./hello)" = "Hello, mise!"

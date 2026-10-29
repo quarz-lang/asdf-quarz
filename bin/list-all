@@ -1,0 +1,9 @@
+#!/bin/sh
+# Prints the versions that can be installed, space-separated.
+set -eu
+# shellcheck source-path=SCRIPTDIR source=../lib/utils.sh
+. "$(dirname "$0")/../lib/utils.sh"
+
+versions=$(list_versions)
+printf '%s\n' "$versions" | tr '\n' ' ' | sed 's/ $//'
+echo

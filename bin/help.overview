@@ -1,0 +1,3 @@
+#!/bin/sh
+echo "Quarz, a statically typed language with Ruby's syntax: https://quarz.dev"
+echo "Each version is built from source (a few minutes): Linux x86-64 only."

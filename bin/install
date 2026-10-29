@@ -1,0 +1,49 @@
+#!/bin/sh
+# Builds the sources bin/download fetched and installs `quarz` with the
+# runtime library compiled programs link (`libquarz_vm.a`, which
+# `quarz build` finds next to `quarz`).
+set -eu
+# shellcheck source-path=SCRIPTDIR source=../lib/utils.sh
+. "$(dirname "$0")/../lib/utils.sh"
+
+src="${ASDF_DOWNLOAD_PATH:?}"
+dest="${ASDF_INSTALL_PATH:?}"
+
+command -v cargo >/dev/null 2>&1 ||
+  fail "cargo not found: install Rust (stable, 1.96 or later) with rustup, https://rustup.rs"
+command -v cc >/dev/null 2>&1 ||
+  fail "cc not found: Rust and \`quarz build\` need a C toolchain (gcc or clang) to link"
+# What quarz's `find_clang` looks for: $QUARZ_CLANG, clang, clang-14...
+clang_found=
+for c in "${QUARZ_CLANG:-clang}" clang clang-14 clang-15 clang-16 clang-17 clang-18 clang-19 clang-20 clang-21 clang-22; do
+  if command -v "$c" >/dev/null 2>&1; then
+    clang_found=1
+    break
+  fi
+done
+[ -n "$clang_found" ] ||
+  echo "asdf-quarz: warning: clang not found: \`quarz run\` works, \`quarz build\` needs clang 14 or later" >&2
+
+# The build stays in the download directory, which the version manager
+# removes.
+CARGO_TARGET_DIR="$src/target"
+export CARGO_TARGET_DIR
+
+cleanup() {
+  rm -rf "$dest"
+}
+trap 'cleanup; exit 1' INT TERM
+
+if ! (cd "$src" && cargo build --release --locked); then
+  cleanup
+  fail "the build failed"
+fi
+
+mkdir -p "$dest/bin"
+cp "$CARGO_TARGET_DIR/release/quarz" "$CARGO_TARGET_DIR/release/libquarz_vm.a" "$dest/bin/" ||
+  { cleanup; fail "the build made no quarz or libquarz_vm.a"; }
+
+if ! "$dest/bin/quarz" --version; then
+  cleanup
+  fail "the installed quarz does not run"
+fi

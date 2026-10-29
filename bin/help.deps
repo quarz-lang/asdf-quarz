@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "Rust (stable, 1.96 or later), through rustup: https://rustup.rs"
+echo "git"
+echo "a C toolchain (cc: gcc or clang), to link"
+echo "clang 14 or later, for \`quarz build\` (\`quarz run\` works without it)"

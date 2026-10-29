@@ -1,0 +1,26 @@
+#!/bin/sh
+# Fetches the sources of a version (the tag `v$ASDF_INSTALL_VERSION`) or
+# of a ref (`ref:main`, a branch, tag or commit) into ASDF_DOWNLOAD_PATH.
+set -eu
+# shellcheck source-path=SCRIPTDIR source=../lib/utils.sh
+. "$(dirname "$0")/../lib/utils.sh"
+
+[ -n "${ASDF_DOWNLOAD_PATH:-}" ] || fail "ASDF_DOWNLOAD_PATH is not set"
+version="${ASDF_INSTALL_VERSION:?}"
+
+case "${ASDF_INSTALL_TYPE:-version}" in
+  version)
+    git -c advice.detachedHead=false clone --quiet --depth 1 --branch "v$version" \
+      "$QUARZ_REPO" "$ASDF_DOWNLOAD_PATH" ||
+      fail "cannot fetch the tag v$version of $QUARZ_REPO (bin/list-all lists the versions)"
+    ;;
+  ref)
+    git clone --quiet "$QUARZ_REPO" "$ASDF_DOWNLOAD_PATH" ||
+      fail "cannot clone $QUARZ_REPO"
+    git -C "$ASDF_DOWNLOAD_PATH" -c advice.detachedHead=false checkout --quiet "$version" -- ||
+      fail "no ref $version in $QUARZ_REPO"
+    ;;
+  *)
+    fail "unknown install type ${ASDF_INSTALL_TYPE}"
+    ;;
+esac
