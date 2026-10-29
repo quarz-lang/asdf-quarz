@@ -15,9 +15,14 @@ Linux x86-64 only, for now. Building a version takes a few minutes.
 
 ## With mise
 
+No version has been released yet: the first will be 0.1.0. Until then,
+use `ref:main`, the development version, in place of `0.1.0` below
+(`mise use -g quarz@ref:main`), and `mise ls-remote quarz` lists
+nothing.
+
 ```sh
 mise plugin add quarz https://github.com/quarz-lang/asdf-quarz
-mise use -g quarz@0.1.0     # the default version
+mise use -g quarz@0.1.0     # your default version
 mise use quarz@0.1.0        # this project's version, in its mise.toml
 mise install quarz@ref:main # the development version, from quarz's main
 quarz --version
@@ -31,10 +36,14 @@ builds it anew.
 
 ## With asdf
 
+No version has been released yet (see above): until then, use
+`ref:main` in place of `0.1.0` below (`asdf install quarz ref:main`,
+`asdf set -u quarz ref:main`).
+
 ```sh
 asdf plugin add quarz https://github.com/quarz-lang/asdf-quarz
 asdf install quarz 0.1.0
-asdf set -u quarz 0.1.0     # the default version (asdf 0.16 and later;
+asdf set -u quarz 0.1.0     # your default version (asdf 0.16 and later;
                             # before that, asdf global quarz 0.1.0)
 asdf set quarz 0.1.0        # this project's, in its .tool-versions
 asdf install quarz ref:main
